@@ -41,8 +41,8 @@ func handler(inputChan chan<- UnitTypes.ChanType, outputChan <-chan UnitTypes.Ch
 	for {
 		//t0 := time.Now()
 		data := <-outputChan
-		for i, value := range data {
-			value.Body = value.Body + string(i)
+		for i := 0; i < len(data); i++ {
+			data[i].Body = data[i].Body + "change"
 		}
 		inputChan <- data
 		//t1 := time.Now()

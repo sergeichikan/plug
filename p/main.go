@@ -9,7 +9,7 @@ import (
 // go build -buildmode=plugin -o p/main.so p/main.go
 
 const cycleLimit = time.Millisecond * 100
-const dataLength = 2_000_000
+const dataLength = 100_000
 
 var Data []UnitTypes.Message // можно передать напрямую
 //var InputChan = make(chan []UnitTypes.Message, 1)
@@ -21,7 +21,7 @@ var Data []UnitTypes.Message // можно передать напрямую
 
 func init() {
 	for i := 0; i < dataLength; i++ {
-		Data = append(Data, UnitTypes.Message{"asdas", "", time.Now().Unix(), 1.2})
+		Data = append(Data, UnitTypes.Message{"asdas", "b", time.Now().Unix(), 1.2})
 	}
 	fmt.Println(len(Data))
 }
@@ -38,8 +38,7 @@ func CycleRun(inputChan <-chan UnitTypes.ChanType, outputChan chan<- UnitTypes.C
 		fmt.Println("---")
 		startTime := time.Now()
 		iteration(inputChan, outputChan)
-		endTime := time.Now()
-		workTime := endTime.Sub(startTime)
+		workTime := time.Since(startTime)
 		fmt.Println(workTime)
 		sleepTime := cycleLimit - workTime
 		fmt.Println(sleepTime)
