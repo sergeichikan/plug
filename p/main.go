@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// go build -buildmode=plugin -o p/main.so p/main.go
-
 var Data []UnitTypes.Message // можно передать напрямую
 
 func initData(length int) {

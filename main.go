@@ -17,13 +17,13 @@ func main() {
 	cycleLimit := flag.Int("cycle", int(defaultCycleLimit), "time limit of iteration")
 	dataLength := flag.Int("length", defaultDataLength, "data length")
 	flag.Parse()
-	fmt.Println("plugin", *pluginPath, time.Duration(*cycleLimit), *dataLength)
+	fmt.Println("plugin", *pluginPath)
 	fmt.Println("cycle", time.Duration(*cycleLimit))
 	fmt.Println("length", *dataLength)
-	run(*pluginPath, time.Duration(*cycleLimit), *dataLength)
+	runPlugin(*pluginPath, time.Duration(*cycleLimit), *dataLength)
 }
 
-func run(pluginPath string, cycleLimit time.Duration, dataLength int) {
+func runPlugin(pluginPath string, cycleLimit time.Duration, dataLength int) {
 	plug, err := plugin.Open(pluginPath)
 	if err != nil {
 		fmt.Println(err)
