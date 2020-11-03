@@ -1,51 +1,65 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"plug/UnitTypes"
 	"plugin"
 	"time"
 )
 
-const mod = "./p/main.so"
+const defaultPluginPath = "./p/main.so"
+const defaultCycleLimit = time.Millisecond * 100
+const defaultDataLength = 100_000
 
 func main() {
-	plug, err := plugin.Open(mod)
+	pluginPath := flag.String("plugin", defaultPluginPath, "path to plugin")
+	cycleLimit := flag.Int("cycle", int(defaultCycleLimit), "time limit of iteration")
+	dataLength := flag.Int("length", defaultDataLength, "data length")
+	flag.Parse()
+	fmt.Println("plugin", *pluginPath, time.Duration(*cycleLimit), *dataLength)
+	fmt.Println("cycle", time.Duration(*cycleLimit))
+	fmt.Println("length", *dataLength)
+	run(*pluginPath, time.Duration(*cycleLimit), *dataLength)
+}
+
+func run(pluginPath string, cycleLimit time.Duration, dataLength int) {
+	plug, err := plugin.Open(pluginPath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("loaded", mod)
-	symRun, err := plug.Lookup("CycleRun")
+	fmt.Println("loaded", pluginPath)
+
+	symRun, err := plug.Lookup("Run")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	run, ok := symRun.(func(<-chan UnitTypes.ChanType, chan<- UnitTypes.ChanType))
+
+	run, ok := symRun.(func(<-chan UnitTypes.ChanType, chan<- UnitTypes.ChanType, time.Duration, int))
 	if !ok {
 		fmt.Println(ok)
 		return
 	}
-	fmt.Println("loaded CycleRun")
+	fmt.Println("loaded Run")
 
 	inputChan := make(chan UnitTypes.ChanType, 1)
 	outputChan := make(chan UnitTypes.ChanType, 1)
 
-	go run(inputChan, outputChan)
+	go run(inputChan, outputChan, cycleLimit, dataLength)
 	go handler(inputChan, outputChan)
+
 	time.Sleep(time.Hour)
 }
 
 func handler(inputChan chan<- UnitTypes.ChanType, outputChan <-chan UnitTypes.ChanType) {
-	fmt.Println("handler")
 	for {
-		//t0 := time.Now()
 		data := <-outputChan
-		for i := 0; i < len(data); i++ {
-			data[i].Body = data[i].Body + "change"
+		timestamp := time.Now().Unix()
+		for i := range data {
+			data[i].Time = timestamp
 		}
 		inputChan <- data
-		//t1 := time.Now()
-		//fmt.Println(t1.Sub(t0))
 	}
 }
